@@ -1,16 +1,14 @@
-# Load LSTM network and generate text
 import sys
 import numpy
 from keras.models import Sequential
 from keras.layers import Dense
 from keras.layers import Dropout
 from keras.layers import LSTM
-from keras.callbacks import ModelCheckpoint
 from keras.utils import np_utils
 
 # load ascii text and covert to lowercase
 filename = 'data/stoloto.home.html.txt'
-raw_text = open(filename).read()
+raw_text = open(filename, encoding='utf_8_sig').read()
 raw_text = raw_text.lower()
 # create mapping of unique chars to integers, and a reverse mapping
 chars = sorted(list(set(raw_text)))
@@ -40,15 +38,18 @@ X = X / float(n_vocab)
 y = np_utils.to_categorical(dataY)
 # define the LSTM model
 model = Sequential()
-model.add(LSTM(256, input_shape=(X.shape[1], X.shape[2])))
+model.add(LSTM(256, input_shape=(X.shape[1], X.shape[2]), return_sequences=True))
+model.add(Dropout(0.2))
+model.add(LSTM(256))
 model.add(Dropout(0.2))
 model.add(Dense(y.shape[1], activation='softmax'))
 # load the network weights
-filename = 'weights-improvement-19-1.9435.hdf5'
+filename = 'weights/weights-improvement-04-1.0156-bigger.hdf5'
 model.load_weights(filename)
 model.compile(loss='categorical_crossentropy', optimizer='adam')
 # pick a random seed
 start = numpy.random.randint(0, len(dataX)-1)
+start = 0
 pattern = dataX[start]
 print('Seed:')
 print('"', ''.join([int_to_char[value] for value in pattern]), '"')
